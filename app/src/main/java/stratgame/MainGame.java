@@ -3,6 +3,8 @@ import static org.lwjgl.glfw.GLFW.glfwGetTime;
 import static org.lwjgl.glfw.GLFW.glfwTerminate;
 import static org.lwjgl.glfw.GLFW.glfwWindowShouldClose;
 
+import java.util.Random;
+
 import org.joml.Vector3f;
 
 import stratgame.game.GameManager;
@@ -15,6 +17,8 @@ public class MainGame {
     public static final Vector3f gravity = new Vector3f(0,-1,0);
 
     public static Camera camera = new Camera(0);
+
+    public static Random r = new Random();
 
 	public static float deltaTime = 0.0f;	// Time between current frame and last frame
 	private static float lastFrame = 0.0f; // Time of last frame

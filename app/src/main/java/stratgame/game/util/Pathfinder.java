@@ -34,11 +34,11 @@ public class Pathfinder {
     private static Node temp1 = new Node(0, 0);
     private static Node temp2 = new Node(0, 0);
     public static int[][] findPath(Vector3f start, Vector3f end){
-        temp1.x = (int)(start.x/GameManager.mapGridSize);
-        temp1.y = (int)(start.z/GameManager.mapGridSize);
-        temp2.x = (int)(end.x/GameManager.mapGridSize);
-        temp2.y = (int)(end.z/GameManager.mapGridSize);
-        List<Node> pathList = findPath(GameManager.mapSpeeds, temp1, temp2);
+        temp1.x = (int)(start.x/GameManager.getMGS());
+        temp1.y = (int)(start.z/GameManager.getMGS());
+        temp2.x = (int)(end.x/GameManager.getMGS());
+        temp2.y = (int)(end.z/GameManager.getMGS());
+        List<Node> pathList = findPath(GameManager.getMS(), temp1, temp2);
         if(pathList == null){
             return new int[][] {{(int)start.x,(int)start.z}};
         }
@@ -106,9 +106,9 @@ public class Pathfinder {
          return (int)((Math.abs(a.x - b.x) + Math.abs(a.y - b.y)));//*grid[a.x][a.y]); // Manhattan distance
     }
 
+    private static int[][] directions = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}, {1, 1}, {1, -1}, {-1, 1}, {-1, -1}};
     private static List<Node> getNeighbors(double[][] grid, Node node) {
         List<Node> neighbors = new ArrayList<>();
-        int[][] directions = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}};
 
         for (int[] dir : directions) {
             int newX = node.x + dir[0];

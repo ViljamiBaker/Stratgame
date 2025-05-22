@@ -109,15 +109,15 @@ public class RenderManager {
 
         defaultTexture = new Texture(LUTILVB.defaultTexture);
 
-        float[] mapVerticies = new float[30*GameManager.mapHeights.length*GameManager.mapHeights[0].length];
-        for (int x = 0; x < GameManager.mapHeights.length-1; x++) {
-            for (int y = 0; y < GameManager.mapHeights[0].length-1; y++) {
+        float[] mapVerticies = new float[30*GameManager.getMH().length*GameManager.getMH()[0].length];
+        for (int x = 0; x < GameManager.getMH().length-1; x++) {
+            for (int y = 0; y < GameManager.getMH()[0].length-1; y++) {
                 for(int i = 0; i<6; i++){
-                    mapVerticies[x*GameManager.mapHeights[0].length*30 + y*30 + i*5] = (float)GameManager.mapGridSize*(x+mapOffsets[i][0]);
-                    mapVerticies[x*GameManager.mapHeights[0].length*30 + y*30 + i*5+1] = (float)GameManager.mapHeights[(x+mapOffsets[i][0])][(y+mapOffsets[i][1])];
-                    mapVerticies[x*GameManager.mapHeights[0].length*30 + y*30 + i*5+2] = (float)GameManager.mapGridSize*(y+mapOffsets[i][1]);
-                    mapVerticies[x*GameManager.mapHeights[0].length*30 + y*30 + i*5+3] = mapOffsets[i][0];
-                    mapVerticies[x*GameManager.mapHeights[0].length*30 + y*30 + i*5+4] = mapOffsets[i][1];
+                    mapVerticies[x*GameManager.getMH()[0].length*30 + y*30 + i*5] = (float)GameManager.getMGS()*(x+mapOffsets[i][0]);
+                    mapVerticies[x*GameManager.getMH()[0].length*30 + y*30 + i*5+1] = (float)GameManager.getMH()[(x+mapOffsets[i][0])][(y+mapOffsets[i][1])];
+                    mapVerticies[x*GameManager.getMH()[0].length*30 + y*30 + i*5+2] = (float)GameManager.getMGS()*(y+mapOffsets[i][1]);
+                    mapVerticies[x*GameManager.getMH()[0].length*30 + y*30 + i*5+3] = mapOffsets[i][0];
+                    mapVerticies[x*GameManager.getMH()[0].length*30 + y*30 + i*5+4] = mapOffsets[i][1];
                 }
             }
         }
@@ -144,7 +144,7 @@ public class RenderManager {
 
 			//render code
 
-            //GameManager.entities.get(0).cFrame.position.add(new Vector3f(0,5,0), MainGame.camera.position);
+            //GameManager.getEntities().get(0).cFrame.position.add(new Vector3f(0,5,0), MainGame.camera.position);
 
             glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -169,10 +169,10 @@ public class RenderManager {
 			//glBufferData(GL_ARRAY_BUFFER, largeVerticies, GL_STATIC_DRAW);
 
 
-			for (Entity e : GameManager.entities) {
+			for (Entity e : GameManager.getEntities()) {
                 glActiveTexture(GL_TEXTURE0);
 			    defaultTexture.bind();
-				model = e.cFrame.getAsMat4(); 
+				model = e.cFrame.getAsMat4().translate(0, (float)e.getRadius(), 0); 
 				pureShader.setUniform("model", model);
 				glBindVertexArray(vertexArray);
 				glDrawArrays(GL_TRIANGLES, 0, 6);
@@ -182,7 +182,7 @@ public class RenderManager {
 			defaultTexture.bind();
 			pureShader.setUniform("model", model.identity());
 			glBindVertexArray(mapVertexArray);
-			glDrawArrays(GL_TRIANGLES, 0, 6*GameManager.mapHeights.length*GameManager.mapHeights[0].length);
+			glDrawArrays(GL_TRIANGLES, 0, 6*GameManager.getMH().length*GameManager.getMH()[0].length);
     
 			drawLinesFlush();
 

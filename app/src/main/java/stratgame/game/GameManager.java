@@ -10,12 +10,14 @@ import stratgame.game.units.Entity;
 import stratgame.game.util.GUTILVB;
 
 public class GameManager {
-    public static ArrayList<Entity> entities = new ArrayList<>();
+    private static ArrayList<Entity> entities = new ArrayList<>();
+    private static ArrayList<Entity> entitiesToRemove = new ArrayList<>();
+    private static ArrayList<Entity> entitiesToAdd = new ArrayList<>();
 
-    public static double[][] mapHeights = new double[10][10];
-    public static double[][] mapSpeeds = new double[10][10];
+    private static double[][] mapHeights = new double[10][10];
+    private static double[][] mapSpeeds = new double[10][10];
 
-    public static double mapGridSize = 10;
+    private static double mapGridSize = 10;
 
     // called once at the start of the game
     public static void init(){
@@ -25,7 +27,7 @@ public class GameManager {
                 mapSpeeds[x][y] = Math.random()*10-1;
             }
         }
-        entities.add(new BaseUnit(new Vector3f(), 0, 1,1));
+        entities.add(new BaseUnit(new Vector3f(), 0, 1,5));
     }
 
     // called once per frame
@@ -33,6 +35,10 @@ public class GameManager {
         for (Entity e : entities) {
             e.update();
         }
+        entities.removeAll(entitiesToRemove);
+        entities.addAll(entitiesToAdd);
+        entitiesToRemove.clear();
+        entitiesToAdd.clear();
     }
 
     private static double gMHA(int x, int z){
@@ -72,5 +78,49 @@ public class GameManager {
         double u1 = GUTILVB.lerp(gMHA(ix, iz+1),gMHA(ix+1, iz+1),s);
         double avgH = GUTILVB.lerp(u0, u1, t);
         return avgH;
+    }
+
+    public static Entity[] getEntitiesInRadius(Vector3f position, double radius){
+        ArrayList<Entity> eninrad = new ArrayList<>();
+        double radiusSquared = radius*radius;
+        Vector3f temp = new Vector3f();
+        for (Entity entity : eninrad) {
+            if(entity.cFrame.position.sub(position, temp).lengthSquared()<=radiusSquared){
+                eninrad.add(entity);
+            }
+        }
+        return eninrad.toArray(new Entity[eninrad.size()]);
+    }
+
+    public static void requestDeletion(Entity e){
+        entitiesToRemove.add(e);
+    }
+
+    public static void requestAddition(Entity e){
+        entitiesToAdd.add(e);
+    }
+
+    public static double[][] getMH() {
+        return mapHeights;
+    }
+
+    public static double[][] getMS() {
+        return mapSpeeds;
+    }
+
+    public static int getMX() {
+        return mapSpeeds.length;
+    }
+
+    public static int getMY() {
+        return mapSpeeds[0].length;
+    }
+
+    public static double getMGS() {
+        return mapGridSize;
+    }
+
+    public static ArrayList<Entity> getEntities() {
+        return entities;
     }
 }

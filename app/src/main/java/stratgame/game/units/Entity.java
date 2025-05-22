@@ -9,11 +9,11 @@ import stratgame.game.util.GUTILVB;
 
 public class Entity {
     public CFrame cFrame;
-    public Vector3f velocity;
-    public double health;
-    public double radius;
-    public double radiusSquared;
-    public float drag = 0.99f;
+    protected Vector3f velocity;
+    private double health;
+    protected double radius;
+    protected double radiusSquared;
+    protected float drag = 0.99f;
 
     protected Vector3f temp = new Vector3f();
 
@@ -39,5 +39,16 @@ public class Entity {
         }
         velocity.mul(drag);
         cFrame.position.add(velocity);
+    }
+
+    public void changeHealth(double value){
+        health += value;
+        if(health<=0){
+            GameManager.requestDeletion(this);
+        }
+    }
+
+    public double getRadius() {
+        return radius;
     }
 }

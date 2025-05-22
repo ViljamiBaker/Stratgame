@@ -245,7 +245,7 @@ public class LUTILVB {
             (source, type, id, severity, length, message, userParam) -> {
                 // ignore just notifications like: Buffer object 1 (bound to GL_ARRAY_BUFFER_ARB, usage hint is GL_STATIC_DRAW)
                 if (severity == 33387) {
-                    //return;
+                    return;
                 }
                 System.err.println("OpenGL Debug Message:");
                 System.err.println("    Source: " + source);

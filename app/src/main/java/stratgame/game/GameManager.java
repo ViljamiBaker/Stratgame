@@ -7,7 +7,6 @@ import org.joml.Vector3f;
 
 import stratgame.game.units.BaseUnit;
 import stratgame.game.units.Entity;
-import stratgame.game.util.CFrame;
 import stratgame.game.util.GUTILVB;
 
 public class GameManager {
@@ -46,6 +45,14 @@ public class GameManager {
         return mapHeights[x][z];
     }
 
+    public static Vector3f convertToMap(Vector3f in){
+        return in.set(in.x/mapGridSize,in.y,in.z/mapGridSize);
+    }
+
+    public static Vector3f convertFrMap(Vector3f in){
+        return in.set(in.x*mapGridSize,in.y,in.z*mapGridSize);
+    }
+
     public static double getMapHeight(Vector3f position){
         double x = (position.x/mapGridSize);
         double z = (position.z/mapGridSize);
@@ -55,10 +62,12 @@ public class GameManager {
         if(z>=mapHeights[0].length||z<0){
             return 0;
         }
+        //return gMHA((int)x, (int)z);
         int ix = (int)x;
         int iz = (int)z;
-        double s = position.x%1.0;
-        double t = position.z%1.0;
+        double s = x%1.0;
+        double t = z%1.0;
+
         double u0 = GUTILVB.lerp(gMHA(ix, iz),gMHA(ix+1, iz),s);
         double u1 = GUTILVB.lerp(gMHA(ix, iz+1),gMHA(ix+1, iz+1),s);
         double avgH = GUTILVB.lerp(u0, u1, t);

@@ -7,7 +7,7 @@ import static org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_L;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_P;
 import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
-import static org.lwjgl.glfw.GLFW.glfwGetKey;
+import static org.lwjgl.glfw.GLFW.glfwGetKey; 
 import static org.lwjgl.glfw.GLFW.glfwPollEvents;
 import static org.lwjgl.glfw.GLFW.glfwSetInputMode;
 import static org.lwjgl.glfw.GLFW.glfwSetWindowShouldClose;
@@ -19,6 +19,7 @@ import static org.lwjgl.opengl.GL11.GL_FILL;
 import static org.lwjgl.opengl.GL11.GL_FLOAT;
 import static org.lwjgl.opengl.GL11.GL_FRONT_AND_BACK;
 import static org.lwjgl.opengl.GL11.GL_LINE;
+import static org.lwjgl.opengl.GL11.GL_LINES;
 import static org.lwjgl.opengl.GL11.GL_TRIANGLES;
 import static org.lwjgl.opengl.GL11.glClear;
 import static org.lwjgl.opengl.GL11.glClearColor;
@@ -36,9 +37,12 @@ import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
 import static org.lwjgl.opengl.GL20.glVertexAttribPointer;
 import static org.lwjgl.opengl.GL30.glBindVertexArray;
 import static org.lwjgl.opengl.GL30.glGenVertexArrays;
+
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.joml.Matrix4f;
+import org.joml.Vector2f;
 import org.joml.Vector3f;
 
 import stratgame.MainGame;
@@ -70,6 +74,8 @@ public class RenderManager {
     private static int mapVertexBuffer;
 
     private static Texture defaultTexture;
+	
+	private static ArrayList<Float> lineData = new ArrayList<>();
 
     public static void init(){
         LUTILVB.init();
@@ -138,7 +144,7 @@ public class RenderManager {
 
 			//render code
 
-            GameManager.entities.get(0).cFrame.position.add(new Vector3f(0,5,0), MainGame.camera.position);
+            //GameManager.entities.get(0).cFrame.position.add(new Vector3f(0,5,0), MainGame.camera.position);
 
             glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -177,12 +183,92 @@ public class RenderManager {
 			pureShader.setUniform("model", model.identity());
 			glBindVertexArray(mapVertexArray);
 			glDrawArrays(GL_TRIANGLES, 0, 6*GameManager.mapHeights.length*GameManager.mapHeights[0].length);
-            
+    
+			drawLinesFlush();
+
 			glfwSwapBuffers(window);
 			glfwPollEvents();
     }
 
     private static int[][] mapOffsets = {{0,0},{1,0},{1,1},{0,0},{0,1},{1,1}};
+
+	private static int lineVAO, lineVBO;
+
+	public static void drawLine(Vector3f p1, Vector3f p2, Vector3f color)
+	{
+		// point 1
+		lineData.add(p1.x);
+		lineData.add(p1.y);
+		lineData.add(p1.z);
+
+		// color
+		lineData.add(color.x);
+		lineData.add(color.y);
+		lineData.add(color.z);
+
+		// point 2
+		lineData.add(p2.x);
+		lineData.add(p2.y);
+		lineData.add(p2.z);
+
+		// color
+		lineData.add(color.x);
+		lineData.add(color.y);
+		lineData.add(color.z);
+	}
+	public static void drawLine2d(Vector2f p1, Vector2f p2, Vector3f color)
+	{
+		drawLine(new Vector3f(p1, 0), new Vector3f(p2, 0), color);
+	}
+
+	private static boolean createdLineVAO = false;
+
+	private static void drawLinesFlush()
+	{
+		lineShader.use();
+
+		lineShader.setUniform("projection", projection);
+
+		lineShader.setUniform("view", view);
+
+		float[] arr = new float[lineData.size()];
+		for (int i = 0; i < arr.length; i++) {
+			arr[i] = lineData.get(i);
+		}
+
+		if (!createdLineVAO)
+		{
+			createdLineVAO = true;
+
+			lineVAO = glGenVertexArrays();
+
+			lineVBO = glGenBuffers();
+			glBindBuffer(GL_ARRAY_BUFFER, lineVBO);
+			glBufferData(GL_ARRAY_BUFFER, arr, GL_STATIC_DRAW);
+
+			glBindVertexArray(lineVAO);
+
+			glVertexAttribPointer(0, 3, GL_FLOAT, false, Float.BYTES*6,0);
+			glEnableVertexAttribArray(0);
+
+			glVertexAttribPointer(1, 3, GL_FLOAT, false, Float.BYTES*6,Float.BYTES*3);
+			glEnableVertexAttribArray(1);
+		}
+		else
+		{
+			glBindBuffer(GL_ARRAY_BUFFER, lineVBO);
+			glBufferData(GL_ARRAY_BUFFER, arr, GL_STATIC_DRAW);
+		}
+
+		// 6 floats make up a vertex (3 position 3 color)
+		// divide by that to get number of vertices to draw
+		int count = lineData.size()/6;
+
+		glBindVertexArray(lineVAO);
+		glDrawArrays(GL_LINES, 0, count);
+
+		lineData.clear();
+	}
 
     public static void processInput(long window)
 	{

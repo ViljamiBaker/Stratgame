@@ -85,7 +85,7 @@ public class Camera {
 	boolean hDownLast = false;
 	boolean ortho = false;
     public void processInput(){
-		float cameraSpeed = 2.5f * MainGame.deltaTime;
+		float cameraSpeed = 10f * MainGame.deltaTime;
 		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS){
 			position.add(front.mul(cameraSpeed, new Vector3f()));
 		}

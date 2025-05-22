@@ -34,10 +34,10 @@ public class Pathfinder {
     private static Node temp1 = new Node(0, 0);
     private static Node temp2 = new Node(0, 0);
     public static int[][] findPath(Vector3f start, Vector3f end){
-        temp1.x = (int)start.x;
-        temp1.y = (int)start.z;
-        temp2.x = (int)end.x;
-        temp2.y = (int)end.z;
+        temp1.x = (int)(start.x/GameManager.mapGridSize);
+        temp1.y = (int)(start.z/GameManager.mapGridSize);
+        temp2.x = (int)(end.x/GameManager.mapGridSize);
+        temp2.y = (int)(end.z/GameManager.mapGridSize);
         List<Node> pathList = findPath(GameManager.mapSpeeds, temp1, temp2);
         if(pathList == null){
             return new int[][] {{(int)start.x,(int)start.z}};

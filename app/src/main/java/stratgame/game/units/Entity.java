@@ -8,21 +8,31 @@ import stratgame.game.util.CFrame;
 import stratgame.game.util.GUTILVB;
 
 public class Entity {
+    public static long CURRENTENTITYID = 0;
+
     public CFrame cFrame;
     protected Vector3f velocity;
-    private double health;
     protected double radius;
     protected double radiusSquared;
     protected float drag = 0.99f;
+    protected int team;
+    protected double health;
+    protected double dragCooef;
+
+    private long entityID;
 
     protected Vector3f temp = new Vector3f();
 
-    public Entity(CFrame cFrame, Vector3f velocity, double health, double radius){
+    public Entity(CFrame cFrame, Vector3f velocity, double health, double radius, int team, double dragCooef){
         this.cFrame = cFrame;
         this.velocity = velocity;
         this.health = health;
         this.radius = radius;
         this.radiusSquared = radius*radius;
+        this.team = team;
+        this.dragCooef = dragCooef;
+        this.entityID = CURRENTENTITYID;
+        CURRENTENTITYID++;
     }
 
     public void update(){
@@ -38,7 +48,8 @@ public class Entity {
         }else{
         }
         velocity.mul(drag);
-        cFrame.position.add(velocity);
+        GUTILVB.mulAdd(cFrame.position, velocity, MainGame.deltaTime);
+        //cFrame.position.add(velocity.mul(MainGame.deltaTime,new Vector3f()));
     }
 
     public void changeHealth(double value){
@@ -50,5 +61,34 @@ public class Entity {
 
     public double getRadius() {
         return radius;
+    }
+
+    public int getTeam() {
+        return team;
+    }
+    
+    public double getRadiusSquared() {
+        return radiusSquared;
+    }
+
+    public Vector3f getVelocity() {
+        return velocity;
+    }
+
+    public float getDrag() {
+        return drag;
+    }
+
+    public long getEntityID() {
+        return entityID;
+    }
+
+    @Override
+    public boolean equals(Object o){
+        if(!(o instanceof Entity)){
+            return false;
+        }
+        Entity e = (Entity)o;
+        return e.entityID == this.entityID;
     }
 }

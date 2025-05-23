@@ -1,12 +1,12 @@
 package stratgame.game.ai;
 
+import java.util.ArrayList;
+
 import org.joml.Vector3f;
 
 import stratgame.MainGame;
 import stratgame.game.GameManager;
 import stratgame.game.ai.AISTATES.GOAL;
-import stratgame.game.ai.AISTATES.STATUS;
-import stratgame.game.ai.AISTATES.SUBGOAL;
 import stratgame.game.units.BaseUnit;
 import stratgame.game.units.Entity;
 import stratgame.game.util.Pathfinder;
@@ -19,9 +19,9 @@ public class AI {
 
     private Entity target;
 
-    private Vector3f targetPos = new Vector3f();
+    private Vector3f targetPos;
 
-    private Vector3f localTargetPos = new Vector3f();
+    private Vector3f localTargetPos;
     
     private int[][] path;
 
@@ -30,163 +30,60 @@ public class AI {
     private GOAL goal = GOAL.IDLE;
     private double goalTime;
 
-    private SUBGOAL subgoal = SUBGOAL.WANDER;
-    private double subgoalTime;
-
-    private STATUS status = STATUS.MOVING;
-    private double statusTime;
-
     public AI(BaseUnit p){
         this.p = p;
+        targetPos = new Vector3f(p.cFrame.position);
+        localTargetPos = new Vector3f(p.cFrame.position);
     }
     // switch case for each combo of goal subgoal and status
     public void update(){
         routene();
         goalTime += MainGame.deltaTime;
-        subgoalTime += MainGame.deltaTime;
-        statusTime += MainGame.deltaTime;
     }
 
     private void routene(){
         switch (goal) {
             case ATTACK:
-                switch (subgoal) {
-                    case WANDER:
-                        switch (status) {
-                            case MOVING:
-
-                                break;
-                            case ATTACK:
-
-                                break;
-                            case STILL:
-
-                                break;
-                        }
+                if(target == null){
+                    target = generateTarget();
+                    if(target == null){
+                        setGoal(GOAL.IDLE);
                         break;
-                    case GOTO:
-                        switch (status) {
-                            case MOVING:
-
-                                break;
-                            case ATTACK:
-
-                                break;
-                            case STILL:
-
-                                break;
-                        }
-                        break;
-                    case IDLE:
-                        switch (status) {
-                            case MOVING:
-
-                                break;
-                            case ATTACK:
-
-                                break;
-                            case STILL:
-
-                                break;
-                        }
-                        break;
+                    }
+                }
+                Vector3f newTargetPos = genTargetPos();
+                if(p.cFrame.position.distance(newTargetPos)>1){
+                    targetPos = newTargetPos;
+                    if(!GameManager.isAtMapPosition(newTargetPos, path[path.length-1][0], path[path.length-1][1])){
+                        createPath();
+                    }
+                    pathfind();
+                    moveAlongPath();
+                }else{
+                    p.moveTo(p.cFrame.position);
+                    p.attack(target.cFrame.position);
                 }
                 break;
             case DEFEND:
-                switch (subgoal) {
-                    case WANDER:
-                        switch (status) {
-                            case MOVING:
-
-                                break;
-                            case ATTACK:
-
-                                break;
-                            case STILL:
-
-                                break;
-                        }
-                        break;
-                    case GOTO:
-                        switch (status) {
-                            case MOVING:
-
-                                break;
-                            case ATTACK:
-
-                                break;
-                            case STILL:
-
-                                break;
-                        }
-                        break;
-                    case IDLE:
-                        switch (status) {
-                            case MOVING:
-
-                                break;
-                            case ATTACK:
-
-                                break;
-                            case STILL:
-
-                                break;
-                        }
-                        break;
-                }
-                break;
             case IDLE:
-                switch (subgoal) {
-                    case WANDER:
-                        switch (status) {
-                            case MOVING:
-                                if(atTarget()){
-                                    wander();
-                                }
-                                pathfind();
-                                moveAlongPath();
-                                if(statusTime>10){
-                                    setStatus(STATUS.STILL);
-                                }
-                                break;
-                            case ATTACK:
-                                setStatus(STATUS.MOVING);
-                                break;
-                            case STILL:
-                                if(statusTime>10){
-                                    wander();
-                                    setStatus(STATUS.MOVING);
-                                }
-                                p.moveTo(p.cFrame.position);
-                                break;
-                        }
+                if(goalTime>10){
+                    target = generateTarget();
+                    if(target != null){
+                        setGoal(GOAL.ATTACK);
                         break;
-                    case GOTO:
-                        switch (status) {
-                            case MOVING:
-
-                                break;
-                            case ATTACK:
-
-                                break;
-                            case STILL:
-
-                                break;
-                        }
-                        break;
-                    case IDLE:
-                        switch (status) {
-                            case MOVING:
-
-                                break;
-                            case ATTACK:
-
-                                break;
-                            case STILL:
-
-                                break;
-                        }
-                        break;
+                    }
+                    wander();
+                    setGoal(GOAL.WANDER);
+                }
+                p.moveTo(p.cFrame.position);
+            case WANDER:
+                if(atTarget()){
+                    wander();
+                }
+                pathfind();
+                moveAlongPath();
+                if(goalTime>10){
+                    setGoal(GOAL.IDLE);
                 }
                 break;
         }
@@ -195,16 +92,7 @@ public class AI {
     public void setGoal(GOAL goal){
         this.goal = goal;
         goalTime = 0;
-    }
-
-    public void setSubgoal(SUBGOAL subgoal) {
-        this.subgoal = subgoal;
-        subgoalTime = 0;
-    }
-
-    public void setStatus(STATUS status) {
-        this.status = status;
-        statusTime = 0;
+        System.out.println(goal);
     }
 
     private void createPath(){
@@ -252,4 +140,37 @@ public class AI {
     public boolean atTarget(){
         return Math.abs(targetPos.x-p.cFrame.position.x)+Math.abs(targetPos.z-p.cFrame.position.z)<=1;
     }
+
+    protected Entity generateTarget(){
+        ArrayList<Entity> entities = GameManager.getEntities();
+        double highestScore = -2.0;
+        int highestScoreIndex = -1;
+        for (int i = 0; i < entities.size(); i++) {
+            double score = evaluateTarget(entities.get(i));
+            if(score>highestScore){
+                highestScore = score;
+                highestScoreIndex = i;
+            }
+        }
+        if(highestScore <= 0.0){
+            return null;
+        }
+        return entities.get(highestScoreIndex);
+    }
+
+    protected Vector3f genTargetPos(){
+        Vector3f diff = p.cFrame.position.sub(target.cFrame.position,new Vector3f());
+        if(diff.length()>p.getRange()*0.8){
+            diff.normalize((float)p.getRange()*0.8f);
+        }
+        Vector3f newTargetPos = diff.add(target.cFrame.position);
+        return newTargetPos;
+    }
+
+    protected double evaluateTarget(Entity e){
+        if(e.equals(p)||p.getTeam()==e.getTeam()){
+            return -1.0;
+        }
+        return e.cFrame.position.distanceSquared(p.cFrame.position);
+    } 
 }

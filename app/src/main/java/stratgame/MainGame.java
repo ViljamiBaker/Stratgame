@@ -14,7 +14,7 @@ import stratgame.rendering.things.Camera;
 // Handles the main loop
 // Holds variables for things rendering and game use e.g: camera
 public class MainGame {
-    public static final Vector3f gravity = new Vector3f(0,-1,0);
+    public static final Vector3f gravity = new Vector3f(0,-9.8f,0);
 
     public static Camera camera = new Camera(0);
 
@@ -37,7 +37,7 @@ public class MainGame {
             float currentFrame = (float)glfwGetTime();
 			deltaTime = currentFrame - lastFrame;
 			lastFrame = currentFrame;
-            GameManager.tick();
+            GameManager.update();
             RenderManager.render();
 		}
 		glfwTerminate();

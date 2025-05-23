@@ -56,6 +56,15 @@ public class GUTILVB {
         return out;
     }
 
+    public static Vector3f vector3toAngles(Vector3f io){
+        float pitch = Math.asin(io.y);
+        float yaw = Math.acos(io.x/Math.cos(pitch)) * Math.signum(-io.z);
+        io.x = 0;
+        io.y = pitch;
+        io.z = yaw;
+        return io;
+    }
+
     private static Quaternionf temp;
 
     public static Quaternionf rotateQuatByEuler(Quaternionf quat, float pitch, float yaw, float roll){

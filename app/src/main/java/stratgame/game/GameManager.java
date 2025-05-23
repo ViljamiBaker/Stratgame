@@ -5,9 +5,11 @@ import java.util.ArrayList;
 
 import org.joml.Vector3f;
 
+import stratgame.MainGame;
 import stratgame.game.units.BaseUnit;
 import stratgame.game.units.Entity;
 import stratgame.game.util.GUTILVB;
+import stratgame.game.weapons.Weapon;
 
 public class GameManager {
     private static ArrayList<Entity> entities = new ArrayList<>();
@@ -23,15 +25,16 @@ public class GameManager {
     public static void init(){
         for (int x = 0; x < mapHeights.length-1; x++) {
             for (int y = 0; y < mapHeights[0].length-1; y++) {
-                mapHeights[x][y] = Math.random()*10-1;
-                mapSpeeds[x][y] = Math.random()*10-1;
+                mapHeights[x][y] = MainGame.r.nextInt(2);
+                mapSpeeds[x][y] = MainGame.r.nextInt(2);
             }
         }
-        entities.add(new BaseUnit(new Vector3f(), 0, 1,5));
+        entities.add(new BaseUnit(new Vector3f( 0, 0, 0), 0, 1,5,1, new Weapon(10, 1, 50, 1, 0.2)));
+        entities.add(new BaseUnit(new Vector3f(50,50,50), 0, 1,5,2, new Weapon(10, 1, 50, 1, 0.2)));
     }
 
     // called once per frame
-    public static void tick(){
+    public static void update(){
         for (Entity e : entities) {
             e.update();
         }
@@ -80,16 +83,37 @@ public class GameManager {
         return avgH;
     }
 
-    public static Entity[] getEntitiesInRadius(Vector3f position, double radius){
+    public static Entity[] getEntitiesInRadius(Vector3f position, double radius, long ignoreTeam){
         ArrayList<Entity> eninrad = new ArrayList<>();
         double radiusSquared = radius*radius;
         Vector3f temp = new Vector3f();
-        for (Entity entity : eninrad) {
-            if(entity.cFrame.position.sub(position, temp).lengthSquared()<=radiusSquared){
+        for (Entity entity : entities) {
+            if(ignoreTeam!=-1&&entity.getTeam()==ignoreTeam)continue;
+            if(entity.cFrame.position.sub(position, temp).lengthSquared()<=radiusSquared+entity.getRadiusSquared()){
                 eninrad.add(entity);
             }
         }
         return eninrad.toArray(new Entity[eninrad.size()]);
+    }
+
+    public static Entity getColliding(Entity e, boolean ignoreTeam){
+        for (Entity entity : entities) {
+            if(entity.equals(e)||(ignoreTeam&&entity.getTeam()==e.getTeam())){
+                continue;
+            }
+            if(e.getRadiusSquared()+entity.getRadiusSquared()<=e.cFrame.position.distanceSquared(entity.cFrame.position)){
+                return entity;
+            }
+        }
+        return null;
+    }
+
+    public static boolean isColliding(Entity e, boolean ignoreTeam){
+        return getColliding(e,ignoreTeam) != null;
+    }
+
+    public static boolean isAtMapPosition(Vector3f pos, int x, int y){
+        return ((int)pos.x/mapGridSize==x)&&((int)pos.z/mapGridSize==y);
     }
 
     public static void requestDeletion(Entity e){

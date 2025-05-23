@@ -16,27 +16,27 @@ public class GameManager {
     private static ArrayList<Entity> entitiesToRemove = new ArrayList<>();
     private static ArrayList<Entity> entitiesToAdd = new ArrayList<>();
 
-    private static double[][] mapHeights = new double[10][10];
-    private static double[][] mapSpeeds = new double[10][10];
+    private static double[][] mapHeights = new double[50][50];
+    private static double[][] mapSpeeds = new double[50][50];
 
-    private static double mapGridSize = 10;
+    private static double mapGridSize = 2;
 
     // called once at the start of the game
     public static void init(){
         for (int x = 0; x < mapHeights.length-1; x++) {
             for (int y = 0; y < mapHeights[0].length-1; y++) {
                 mapHeights[x][y] = MainGame.r.nextInt(2);
-                mapSpeeds[x][y] = MainGame.r.nextInt(2);
+                mapSpeeds[x][y] = MainGame.r.nextDouble(5);
             }
         }
-        entities.add(new BaseUnit(new Vector3f( 0, 0, 0), 0, 1,5,1, new Weapon(10, 1, 50, 1, 0.2)));
-        entities.add(new BaseUnit(new Vector3f(50,50,50), 0, 1,5,2, new Weapon(10, 1, 50, 1, 0.2)));
+        entities.add(new BaseUnit(new Vector3f( 0, 0, 0), 10, 1,5,1, new Weapon(100, 1, 50, 1, 0.2)));
+        entities.add(new BaseUnit(new Vector3f(50,50,50), 10, 1,5,2, new Weapon(100, 1, 50, 1, 0.2)));
     }
 
     // called once per frame
     public static void update(){
         for (Entity e : entities) {
-            e.update();
+            e.fullupdate();
         }
         entities.removeAll(entitiesToRemove);
         entities.addAll(entitiesToAdd);
@@ -101,7 +101,7 @@ public class GameManager {
             if(entity.equals(e)||(ignoreTeam&&entity.getTeam()==e.getTeam())){
                 continue;
             }
-            if(e.getRadiusSquared()+entity.getRadiusSquared()<=e.cFrame.position.distanceSquared(entity.cFrame.position)){
+            if(e.getRadiusSquared()+entity.getRadiusSquared()>=e.cFrame.position.distanceSquared(entity.cFrame.position)){
                 return entity;
             }
         }

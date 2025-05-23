@@ -36,20 +36,28 @@ public class Entity {
     }
 
     public void update(){
+    }
+    // DO NOT OVERRIDE
+    public void fullupdate(){
         physics();
+        update();
     }
 
     public void physics(){
         double mapHeight = GameManager.getMapHeight(cFrame.position);
         GUTILVB.mulAdd(velocity, MainGame.gravity, MainGame.deltaTime);
-        if(cFrame.position.y<=mapHeight){
-            cFrame.position.y = (float)mapHeight;
+        if(cFrame.position.y-radius<=mapHeight){
+            cFrame.position.y = (float)mapHeight+(float)radius;
+            hitGround();
             velocity.y = 0;
         }else{
         }
         velocity.mul(drag);
         GUTILVB.mulAdd(cFrame.position, velocity, MainGame.deltaTime);
-        //cFrame.position.add(velocity.mul(MainGame.deltaTime,new Vector3f()));
+    }
+
+    protected void hitGround(){
+
     }
 
     public void changeHealth(double value){

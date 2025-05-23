@@ -19,19 +19,22 @@ public class Bullet extends Entity{
 
     public void update(){
         super.update();
-        if(cFrame.position.y-GameManager.getMapHeight(cFrame.position)<=0.01){
-            hit();
-        }
-        int colliding = GameManager.getEntitiesInRadius(cFrame.position, radius, team).length;
-        if(colliding != 0){
-            hit();
+        Entity e = GameManager.getColliding(this, true);
+        if(e!=null){
+            hit(e);
         }
     }
 
-    public void hit(){
-        Entity entity = GameManager.getColliding(this, true);
+    @Override
+    public void hitGround(){
+        GameManager.requestDeletion(this);
+    }
 
-        entity.changeHealth(-damage/entity.cFrame.position.sub(cFrame.position,new Vector3f()).length());
+    public void hit(Entity e){
+        if(e == null){
+            return;
+        }
+        e.changeHealth(-damage*velocity.length());
         GameManager.requestDeletion(this);
     }
 }

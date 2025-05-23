@@ -74,7 +74,7 @@ public class Pathfinder {
                     continue;
                 }
 
-                int tentativeG = current.g + 1;
+                int tentativeG = current.g + (int)grid[current.x][current.y];
 
                 if (tentativeG < neighbor.g || !openSet.contains(neighbor)) {
                     neighbor.g = tentativeG;
@@ -103,7 +103,7 @@ public class Pathfinder {
     }
 
     private static int heuristic(Node a, Node b, double[][] grid) {
-         return (int)((Math.abs(a.x - b.x) + Math.abs(a.y - b.y)));//*grid[a.x][a.y]); // Manhattan distance
+         return (int)((Math.abs(a.x - b.x) + Math.abs(a.y - b.y)))*5;//*); // Manhattan distance
     }
 
     private static int[][] directions = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}, {1, 1}, {1, -1}, {-1, 1}, {-1, -1}};

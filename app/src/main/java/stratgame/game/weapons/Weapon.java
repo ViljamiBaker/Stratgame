@@ -34,6 +34,6 @@ public class Weapon {
             //return;
         }
         cooldown = maxCooldown;
-        GameManager.requestAddition(new Bullet(new Vector3f(0,(float)p.getRadius(),0).add(p.cFrame.position), pos.sub(p.cFrame.position).normalize((float)velocity), damage, radius, p.getTeam()));
+        GameManager.requestAddition(new Bullet(new Vector3f(p.cFrame.position), pos.sub(p.cFrame.position, new Vector3f()).normalize((float)velocity), damage, radius, p.getTeam()));
     }
 }

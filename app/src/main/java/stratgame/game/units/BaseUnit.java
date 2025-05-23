@@ -28,12 +28,10 @@ public class BaseUnit extends Entity{
     public void moveTo(Vector3f to){
         moveTo = to;
     }
-
+    @Override
     public void update(){
-        super.update();
         weapon.update();
         ai.update();
-        temp.set(0);
         Vector3f diff = moveTo.sub(cFrame.position, temp);
         diff.y = 0;
         if(diff.lengthSquared()!=0){

@@ -64,6 +64,7 @@ public class RenderManager {
 	private static boolean lockMouse = true;
 	private static boolean lDownLast = false;
 
+	private static Shader lightShader;
 	private static Shader pureShader;
 	private static Shader lineShader;
 
@@ -74,12 +75,13 @@ public class RenderManager {
     private static int mapVertexBuffer;
 
     private static Texture defaultTexture;
+    private static Texture gTexture;
 	
 	private static ArrayList<Float> lineData = new ArrayList<>();
 
     public static void init(){
         LUTILVB.init();
-        window = LUTILVB.createWindow(800, 600, "Colors");
+        window = LUTILVB.createWindow(1600, 1000, "StratGame");
 		glEnable(GL_DEPTH_TEST);  
 		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 		LUTILVB.enableDebug();
@@ -101,6 +103,7 @@ public class RenderManager {
 		glVertexAttribPointer(1, 2, GL_FLOAT, false, Float.BYTES*5, Float.BYTES*3);
 		glEnableVertexAttribArray(1);
 
+		lightShader = new Shader("shaderVertex", "shaderFrag");
 		pureShader = new Shader("shaderVertex", "shaderFragTexture");
 		lineShader = new Shader("shaderLineVertex", "shaderLineFrag");
 
@@ -108,6 +111,7 @@ public class RenderManager {
 		staticCamera.position = new Vector3f(0,0,1);
 
         defaultTexture = new Texture(LUTILVB.defaultTexture);
+        gTexture = new Texture("ground.png");
 
         float[] mapVerticies = new float[30*GameManager.getMH().length*GameManager.getMH()[0].length];
         for (int x = 0; x < GameManager.getMH().length-1; x++) {
@@ -172,14 +176,14 @@ public class RenderManager {
 			for (Entity e : GameManager.getEntities()) {
                 glActiveTexture(GL_TEXTURE0);
 			    defaultTexture.bind();
-				model = e.cFrame.getAsMat4().translate(0, (float)e.getRadius(), 0); 
+				model = e.cFrame.getAsMat4(); 
 				pureShader.setUniform("model", model);
 				glBindVertexArray(vertexArray);
 				glDrawArrays(GL_TRIANGLES, 0, 6);
 			}
 
             glActiveTexture(GL_TEXTURE0);
-			defaultTexture.bind();
+			gTexture.bind();
 			pureShader.setUniform("model", model.identity());
 			glBindVertexArray(mapVertexArray);
 			glDrawArrays(GL_TRIANGLES, 0, 6*GameManager.getMH().length*GameManager.getMH()[0].length);
